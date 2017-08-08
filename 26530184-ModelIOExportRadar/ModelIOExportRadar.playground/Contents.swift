@@ -25,18 +25,20 @@ func createSimpleScene() -> SCNScene {
 /*:
  Checks whether the scene really was exported.
  */
-func verifyExportOfScene(scene:SCNScene, toURL url:NSURL) -> Bool {
-    let asset = MDLAsset(SCNScene: scene)
-    if asset.exportAssetToURL(url) {
-        print("Checking for file at URL = \(url)")
-        let reallyWorked = NSFileManager.defaultManager().fileExistsAtPath(url.path!)
+func verifyExportOfScene(_ scene:SCNScene, toURL url:URL) -> Bool {
+    let asset = MDLAsset(scnScene: scene)
+    do {
+        try asset.export(to: url)
+        let reallyWorked = FileManager.default.fileExists(atPath: url.path)
         if reallyWorked {
             return true
         }
         else {
-            fatalError("Just kidding! Although I returned true I didn't real save your file!")
+            fatalError("Just kidding! I didn't write your file, but did not throw an error!")
         }
-    } else {
+    }
+    catch let e {
+        print("Caught expected error \(e)")
         return false
     }
 }
@@ -44,9 +46,9 @@ func verifyExportOfScene(scene:SCNScene, toURL url:NSURL) -> Bool {
 /*:
  Construct two URLs, one to an existent directory and one to a non-existent directory.
 */
-let docDirURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
-let validURL = docDirURL.URLByAppendingPathComponent("model.obj")
-let invalidURL = docDirURL.URLByAppendingPathComponent("\(NSUUID().UUIDString)/model.obj")
+let docDirURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+let validURL = docDirURL.appendingPathComponent("model.obj")
+let invalidURL = docDirURL.appendingPathComponent("\(NSUUID().uuidString)/model.obj")
 
 let scene = createSimpleScene()
 /*:
